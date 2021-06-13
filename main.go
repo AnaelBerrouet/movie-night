@@ -12,6 +12,8 @@ import (
 	//Third Party Packages
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type Specification struct {
@@ -39,10 +41,14 @@ func main() {
 
 	db := createDBClient(s.DBConnectionString)
 	// Close database connection once main function completes
-	defer db.Close()
+	sqldb, err := db.DB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sqldb.Close()
 	// Check DB connectivity
-	pingDB(db)
 
+	pingDB(sqldb)
 	// Create Application Router
 	r := mux.NewRouter()
 	r.Handle("/", handlers.HomeHandler(db)).Methods("POST")
@@ -77,9 +83,9 @@ func fetchENV() *Specification {
 }
 
 // createClient - Create a Database Client
-func createDBClient(connStr string) (db *sql.DB) {
+func createDBClient(connStr string) (db *gorm.DB) {
 
-	db, err := sql.Open("mysql", connStr)
+	db, err := gorm.Open(mysql.Open(connStr), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,8 +96,10 @@ func createDBClient(connStr string) (db *sql.DB) {
 // pingDB - Ping DB to check connection on Boot
 func pingDB(db *sql.DB) {
 	err := db.Ping()
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	log.Println("Successfully Pinged the DB")
 }

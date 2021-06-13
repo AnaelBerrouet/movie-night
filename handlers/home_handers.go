@@ -3,14 +3,14 @@ package handlers
 import (
 	// ThirdParty Packages
 	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
-func HomeHandler(db *sql.DB) (fn AppHandler) {
+func HomeHandler(db *gorm.DB) (fn AppHandler) {
 	fn = func(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 		vars := mux.Vars(req)
 		w.WriteHeader(http.StatusOK)
